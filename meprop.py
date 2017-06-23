@@ -25,10 +25,9 @@ class meProp(function.Function):
         xp = cuda.get_array_module(*x)
         indices = numpy.argpartition(
                 cuda.to_cpu(-xp.absolute(gy[0])), self.k, axis=1)[:, :self.k]
-        self.mask = numpy.zeros_like(gy[0], dtype=numpy.float32)
+        self.mask = numpy.zeros(shape=gy[0].shape, dtype=numpy.float32)
         for i in range(self.mask.shape[0]):
             self.mask[i][indices[i]] = 1
-        #self.mask.ravel()[numpy.ravel_multi_index(indices.T, self.mask.shape)] = 1
         if xp != numpy:
             self.mask = cuda.to_gpu(self.mask)
         return gy[0] * self.mask,
@@ -42,7 +41,7 @@ def meprop(x, k=10, **kwargs):
     Returns:
         ~chainer.Variable: Output variable.
     See the paper by X. Sun: `meProp: Sparsified Back Propagation for \
-    Accelerated Deep Learning with Reduced Overfitting 
+    Accelerated Deep Learning with Reduced Overfitting \
     <https://arxiv.org/abs/1706.06197>`_.
     """
     argument.assert_kwargs_empty(kwargs)
